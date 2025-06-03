@@ -69,12 +69,14 @@ class MultiprocExecutor(Executor):
 
         # Initialize worker and set up message queues for SchedulerOutputs
         # and ModelRunnerOutputs
+        #!  在MultiprocExecutor上，我们将创建一个rpc_broadcast_mq队列
         self.rpc_broadcast_mq = MessageQueue(self.world_size, self.world_size)
         scheduler_output_handle = self.rpc_broadcast_mq.export_handle()
 
         # Create workers
         unready_workers: list[UnreadyWorkerProcHandle] = []
         success = False
+        #!  在MultiProcExecutor上，通过make_worker_process创建子进程
         try:
             for rank in range(self.world_size):
                 unready_workers.append(
@@ -305,6 +307,7 @@ class WorkerProc:
         self.worker.init_device()
         self.worker.load_model()
 
+    #!  多个 GPU 并行处理推理任务, 每个 GPU 对应一个 WorkerProc 实例
     @staticmethod
     def make_worker_process(
             vllm_config: VllmConfig,
